@@ -269,6 +269,8 @@ We actively welcome your pull requests! Please see [CONTRIBUTING.md](.github/CON
 
 # Notes
 
+DETR（DEtection TRansformer）将目标检测任务重新表述为一个端到端的集合预测问题，利用Transformer架构和匈牙利匹配损失实现了无需NMS和anchor的简洁检测模型，并在COCO数据集上取得了与Faster R-CNN相当的性能，尤其在大目标检测上表现更佳。
+
 ### 🔹 输入
 
 - **图像输入**：尺寸为 `3 × H₀ × W₀` 的彩色图像。
