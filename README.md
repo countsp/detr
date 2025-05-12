@@ -315,3 +315,17 @@ DETR（DEtection TRansformer）将目标检测任务重新表述为一个端到�
   - `N` 个归一化边界框
 - 使用 **匈牙利算法**将预测与 Ground Truth 进行一一匹配，计算总损失（分类损失 + 框损失）。
 
+
+### 整体流程总结
+
+images (NestedTensor)
+   ↓
+CNN Backbone（如 ResNet） ➝ features[-1], pos[-1]
+   ↓
+1x1 conv input_proj + flatten
+   ↓
+Transformer Encoder-Decoder（含 learnable object queries）
+   ↓
+Decoder outputs hs ➝ class_embed + bbox_embed
+   ↓
+分类结果 pred_logits + 边框 pred_boxes（归一化）
