@@ -360,7 +360,7 @@ Decoder outputs hs ➝ class_embed + bbox_embed
 
 ---
 
-## ✅ Step 1: 分类代价 `cost_class = 1 - p(GT类)`
+## ✅ Step 1: 分类代价cost_class  `cost_class = 1 - p(GT类)`
 
 | 预测\GT | G0 (B类)       | G1 (A类)       |
 |---------|----------------|----------------|
@@ -368,9 +368,13 @@ Decoder outputs hs ➝ class_embed + bbox_embed
 | P1      | `1 - 0.2 = 0.8`| `1 - 0.7 = 0.3`|
 | P2      | `1 - 0.3 = 0.7`| `1 - 0.3 = 0.7`|
 
+```
+cost_class = -out_prob[:, tgt_ids]
+```
+
 ---
 
-## ✅ Step 2: 边界框 L1 距离代价（粗略估算）
+## ✅ Step 2: 边界框 L1 距离代价cost_box（粗略估算）
 
 | 预测\GT | G0         | G1         |
 |---------|------------|------------|
@@ -378,6 +382,11 @@ Decoder outputs hs ➝ class_embed + bbox_embed
 | P1      | ≈ `0.9`    | ≈ `0.1`    |
 | P2      | ≈ `1.4`    | ≈ `1.5`    |
 
+```
+out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size × num_queries, 4]
+tgt_bbox = torch.cat([v["boxes"] for v in targets])  # 所有 GT 框
+cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
+``
 ---
 
 ## ✅ Step 3: GIoU 代价（负 GIoU）
@@ -387,6 +396,14 @@ Decoder outputs hs ➝ class_embed + bbox_embed
 | P0      | `-0.8`   | `-0.1`   |
 | P1      | `-0.1`   | `-0.9`   |
 | P2      | `-0.2`   | `-0.2`   |
+
+
+```
+cost_giou = -generalized_box_iou(
+    box_cxcywh_to_xyxy(out_bbox), 
+    box_cxcywh_to_xyxy(tgt_bbox)
+)
+```
 
 ---
 
@@ -398,6 +415,9 @@ Decoder outputs hs ➝ class_embed + bbox_embed
 | P1      | `0.8 + 0.9 + 0.1 = 1.8`   | `0.3 + 0.1 + 0.9 = 1.3`  |
 | P2      | `0.7 + 1.4 + 0.2 = 2.3`   | `0.7 + 1.5 + 0.2 = 2.4`  |
 
+```
+C = self.cost_bbox * cost_bbox + self.cost_class * cost_class + self.cost_giou * cost_giou
+```
 ---
 
 ## ✅ Step 5: 匈牙利匹配结果（最小代价分配）
