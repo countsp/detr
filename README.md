@@ -386,7 +386,8 @@ cost_class = -out_prob[:, tgt_ids]
 out_bbox = outputs["pred_boxes"].flatten(0, 1)  # [batch_size × num_queries, 4]
 tgt_bbox = torch.cat([v["boxes"] for v in targets])  # 所有 GT 框
 cost_bbox = torch.cdist(out_bbox, tgt_bbox, p=1)
-``
+```
+
 ---
 
 ## ✅ Step 3: GIoU 代价（负 GIoU）
