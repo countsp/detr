@@ -318,6 +318,7 @@ DETR（DEtection TRansformer）将目标检测任务重新表述为一个端到�
 
 ### 整体流程总结
 
+```
 images (NestedTensor)
    ↓
 CNN Backbone（如 ResNet） ➝ features[-1], pos[-1]
@@ -329,7 +330,10 @@ Transformer Encoder-Decoder（含 learnable object queries）
 Decoder outputs hs ➝ class_embed + bbox_embed
    ↓
 分类结果 pred_logits + 边框 pred_boxes（归一化）
-### 匈牙利分配
+```
+
+### 匈牙利匹配
+
 ## 🧩 场景设定（简化版）
 
 我们设定如下：
