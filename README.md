@@ -265,3 +265,51 @@ DETR is released under the Apache 2.0 license. Please see the [LICENSE](LICENSE)
 
 # Contributing
 We actively welcome your pull requests! Please see [CONTRIBUTING.md](.github/CONTRIBUTING.md) and [CODE_OF_CONDUCT.md](.github/CODE_OF_CONDUCT.md) for more info.
+
+
+# Notes
+
+### 🔹 输入
+
+- **图像输入**：尺寸为 `3 × H₀ × W₀` 的彩色图像。
+- **输出目标个数 N**：模型固定生成 `N` 个预测结果（例如 `N = 100`），其中一部分会对应真实目标，其余被标记为“无目标”。
+
+---
+
+### 🔹 模型结构
+
+#### 1. CNN Backbone（特征提取）
+
+- 通常使用 **ResNet-50** 或 **ResNet-101**。
+- 输出为一个低分辨率的二维特征图 `f ∈ ℝ^{C × H × W}`，例如 `C = 2048`，`H` 和 `W` 是原图的 `1/32`。
+- 使用一个 `1 × 1` 卷积将通道数降为 `d`（例如 `d = 256`），得到 `z₀ ∈ ℝ^{d × H × W}`。
+
+#### 2. Transformer Encoder
+
+- 输入是将 `z₀` 展平后的序列（维度为 `d × HW`），加上**固定的空间位置编码**。
+- 编码器为标准 Transformer 结构（包含多头自注意力、前馈网络、残差连接和 LayerNorm）。
+- 输出是编码后的**全图上下文特征序列**。
+
+#### 3. Transformer Decoder
+
+- 输入是 `N` 个**可学习的 object queries（目标查询向量）**，每个向量长度为 `d`。
+- Decoder 每一层执行：
+  - **自注意力**：学习查询之间的相互关系。
+  - **交叉注意力**：查询与 Encoder 输出进行交互，获取图像上下文。
+- 输出是 `N × d` 的嵌入向量，每个表示一个目标候选。
+
+#### 4. 预测头（FFN）
+
+- 每个 Decoder 输出向量送入一个共享的 3 层前馈网络（FFN），输出两个内容：
+  - 一个类别（包括“无目标”类别 ∅）
+  - 一个边界框（`cx, cy, w, h`，归一化坐标）
+
+---
+
+### 🔹 输出
+
+- 最终输出：
+  - `N` 个类别概率（使用 Softmax 分类）
+  - `N` 个归一化边界框
+- 使用 **匈牙利算法**将预测与 Ground Truth 进行一一匹配，计算总损失（分类损失 + 框损失）。
+
