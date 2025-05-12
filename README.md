@@ -269,7 +269,12 @@ We actively welcome your pull requests! Please see [CONTRIBUTING.md](.github/CON
 
 # Notes
 
-DETR（DEtection TRansformer）将目标检测任务重新表述为一个端到端的集合预测问题，利用Transformer架构和匈牙利匹配损失实现了无需NMS和anchor的简洁检测模型，并在COCO数据集上取得了与Faster R-CNN相当的性能，尤其在大目标检测上表现更佳。
+DETR（DEtection TRansformer）将目标检测任务重新表述为一个端到端的集合预测问题，利用Transformer架构和匈牙利匹配损失实现了无需NMS和anchor的简洁检测模型，并在COCO数据集上取得了与Faster R-CNN相当的性能，尤其在大目标检测上表现更佳。不需要 RPN（Region Proposal Network） 和 NMS（Non-Maximum Suppression）
+
+在像 Faster R-CNN 这样的两阶段检测器中，第一步要做的是：
+    从图像中提出一堆“候选框（region proposals）”，这一步由 RPN 完成。
+    
+NMS 会把重叠度高（IoU 大）的框中保留一个得分最高的，其余删掉。
 
 ### 🔹 输入
 
